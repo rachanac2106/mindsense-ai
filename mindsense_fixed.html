@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindSense – Student Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --card: #ffffff;
+    --border: #e4e2db;
+    --text: #1a1a18;
+    --muted: #7a7972;
+    --happy: #1db97a;
+    --neutral: #a0a0a0;
+    --sad: #f5a623;
+    --stressed: #e84545;
+    --anxious: #7c6ef7;
+    --accent: #1db97a;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+  [data-theme="dark"] {
+    --bg: #12120f;
+    --card: #1e1e1a;
+    --border: #2e2e28;
+    --text: #f0efe8;
+    --muted: #8a8980;
+    --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* NAV */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 32px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: var(--shadow);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .nav-brand { font-weight: 600; font-size: 18px; letter-spacing: -0.5px; }
+  .nav-brand span { font-weight: 300; color: var(--muted); font-size: 13px; margin-left: 8px; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .mood-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: #fff8f0; border: 1px solid #f5a623;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 13px; color: #c4811a; font-weight: 500;
+  }
+  [data-theme="dark"] .mood-badge { background: #2a1f0a; }
+  .mood-dot { width: 8px; height: 8px; border-radius: 50%; background: #f5a623; }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: #1a1a18; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px; cursor: pointer;
+  }
+  [data-theme="dark"] .avatar { background: var(--accent); }
+
+  /* Dark mode toggle */
+  .dark-toggle {
+    background: var(--border); border: none; border-radius: 20px;
+    padding: 5px 10px; cursor: pointer; font-size: 16px;
+    color: var(--text); transition: background 0.2s;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .dark-toggle:hover { background: var(--muted); color: #fff; }
+
+  /* SOS button */
+  .sos-btn {
+    background: #e84545; color: #fff; border: none; border-radius: 20px;
+    padding: 5px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 600; cursor: pointer; animation: sos-pulse 2s infinite;
+    letter-spacing: 0.5px;
+  }
+  @keyframes sos-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(232,69,69,0.4)} 50%{box-shadow:0 0 0 8px rgba(232,69,69,0)} }
+
+  /* LAYOUT */
+  .wrapper { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 24px 32px; max-width: 1280px; margin: 0 auto; }
+  .page-center { padding: 0 32px; max-width: 1280px; margin: 0 auto; }
+
+  /* STRESS ALERT BANNER */
+  .stress-alert {
+    background: linear-gradient(135deg, #fff5f5, #fff0f0);
+    border: 1px solid #ffcdd2; border-left: 4px solid #e84545;
+    border-radius: var(--radius); padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 16px 32px 0; max-width: calc(1280px - 64px);
+    margin-left: auto; margin-right: auto;
+    animation: slideDown 0.4s ease;
+  }
+  [data-theme="dark"] .stress-alert { background: #2a1010; border-color: #5a2020; border-left-color: #e84545; }
+  @keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+  .stress-alert-text { font-size: 13px; font-weight: 500; color: #c62828; }
+  [data-theme="dark"] .stress-alert-text { color: #ff8a80; }
+  .stress-alert-actions { display: flex; gap: 8px; }
+  .alert-action-btn {
+    font-size: 12px; padding: 5px 12px; border-radius: 8px; border: none;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500;
+  }
+  .alert-action-btn.primary { background: #e84545; color: #fff; }
+  .alert-action-btn.secondary { background: var(--border); color: var(--text); }
+
+  /* WEBCAM SECTION */
+  .webcam-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start;
+    box-shadow: var(--shadow);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .webcam-left { display: flex; flex-direction: column; gap: 12px; }
+  .webcam-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+  .video-container {
+    position: relative; border-radius: 12px; overflow: hidden;
+    background: #111; aspect-ratio: 4/3;
+  }
+  #webcam { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .face-overlay { position: absolute; inset: 0; pointer-events: none; }
+  .face-box {
+    position: absolute; top: 22%; left: 28%; width: 44%; height: 50%;
+    border: 2px solid var(--accent); border-radius: 8px;
+    box-shadow: 0 0 0 1px rgba(29,185,122,0.2);
+    animation: pulse-box 2s ease-in-out infinite; display: none;
+  }
+  @keyframes pulse-box { 0%,100%{box-shadow:0 0 0 2px rgba(29,185,122,0.3)} 50%{box-shadow:0 0 0 6px rgba(29,185,122,0.1)} }
+  .face-label {
+    position: absolute; top: calc(22% - 26px); left: 28%;
+    background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+    display: none;
+  }
+  .scanning-line {
+    position: absolute; top: 22%; left: 28%; width: 44%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: scan 1.6s ease-in-out infinite; display: none;
+  }
+  @keyframes scan { 0%{top:22%} 100%{top:72%} }
+  .webcam-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #ccc;
+    transition: background 0.3s;
+  }
+  .status-dot.active { background: var(--accent); animation: blink 1.4s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .webcam-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--text); color: #fff;
+    border: none; border-radius: 10px; padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.2s; width: 100%; justify-content: center;
+  }
+  .webcam-btn:hover { opacity: 0.85; }
+  .webcam-btn.stop { background: #e84545; }
+
+  .webcam-right { display: flex; flex-direction: column; gap: 16px; padding-top: 4px; }
+  .detected-emotion {
+    background: var(--bg); border-radius: 12px; padding: 18px;
+    border: 1px solid var(--border);
+  }
+  .emotion-big { font-size: 36px; margin-bottom: 4px; }
+  .emotion-name { font-size: 22px; font-weight: 600; color: var(--text); }
+  .emotion-conf { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* Wellness Ring */
+  .wellness-ring-wrap {
+    display: flex; align-items: center; gap: 16px; padding: 12px;
+    background: var(--bg); border-radius: 12px; border: 1px solid var(--border);
+  }
+  .ring-svg { width: 70px; height: 70px; flex-shrink: 0; }
+  .ring-info { flex: 1; }
+  .ring-score { font-size: 26px; font-weight: 600; color: var(--accent); letter-spacing: -1px; }
+  .ring-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ring-tip { font-size: 11px; color: var(--muted); margin-top: 4px; font-style: italic; }
+
+  .emotion-bars { display: flex; flex-direction: column; gap: 8px; }
+  .ebar { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .ebar-label { width: 64px; color: var(--muted); }
+  .ebar-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .ebar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .ebar-val { width: 32px; text-align: right; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; }
+
+  /* STAT CARDS */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    margin: 20px auto 0; max-width: calc(1280px - 64px);
+  }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+    text-align: center; box-shadow: var(--shadow);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .stat-val { font-size: 28px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .stat-val.good { color: var(--happy); }
+  .stat-val.warn { color: var(--sad); }
+
+  /* CHART */
+  .main-col { display: flex; flex-direction: column; gap: 18px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .toggle-btns { display: flex; gap: 4px; }
+  .tbtn {
+    font-size: 11px; padding: 3px 10px; border-radius: 6px; border: none;
+    background: transparent; color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .tbtn.active { background: var(--text); color: #fff; }
+
+  .chart-wrap { position: relative; height: 220px; display: flex; align-items: flex-end; gap: 4px; }
+  .y-axis { position: absolute; left: 0; top: 0; bottom: 28px; display: flex; flex-direction: column; justify-content: space-between; }
+  .y-tick { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .bars-area { flex: 1; display: flex; align-items: flex-end; gap: 5px; padding-left: 36px; padding-bottom: 28px; height: 100%; }
+  .bar-col { flex: 1; display: flex; flex-direction: column-reverse; align-items: center; gap: 0; position: relative; cursor: pointer; }
+  .bar-seg { width: 100%; transition: opacity 0.2s; border-radius: 0; }
+  .bar-seg:last-child { border-radius: 6px 6px 0 0; }
+  .bar-col:hover .bar-seg { opacity: 0.8; }
+  .bar-date { position: absolute; bottom: -22px; font-size: 10px; color: var(--muted); white-space: nowrap; }
+  .tooltip {
+    position: absolute; background: var(--text); color: var(--card);
+    border-radius: 10px; padding: 10px 14px; font-size: 12px;
+    pointer-events: none; z-index: 10; min-width: 130px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    opacity: 0; transition: opacity 0.15s; top: 0; left: 0;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip-date { font-weight: 600; margin-bottom: 6px; font-size: 11px; }
+  .tooltip-row { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+  .tooltip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; padding-left: 36px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* SESSIONS */
+  .session-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .session-item:last-child { border-bottom: none; }
+  .session-left { display: flex; align-items: center; gap: 12px; }
+  .session-emoji { font-size: 22px; width: 36px; text-align: center; }
+  .session-time { font-size: 13px; font-weight: 500; }
+  .session-mood { font-size: 11px; color: var(--muted); text-transform: capitalize; margin-top: 1px; }
+  .session-score { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--muted); }
+
+  /* SIDEBAR */
+  .sidebar { display: flex; flex-direction: column; gap: 18px; }
+
+  /* AI CHAT */
+  .chat-messages { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; margin-bottom: 12px; padding-right: 4px; }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .ai-bubble {
+    background: var(--bg); border-radius: 12px 12px 12px 2px;
+    padding: 10px 14px; font-size: 13px; line-height: 1.5; color: var(--text);
+    border: 1px solid var(--border); max-width: 90%; align-self: flex-start;
+  }
+  .user-bubble {
+    background: var(--text); color: var(--card); border-radius: 12px 12px 2px 12px;
+    padding: 10px 14px; font-size: 13px; line-height: 1.5;
+    max-width: 90%; align-self: flex-end;
+  }
+  .typing-indicator {
+    display: flex; gap: 4px; padding: 10px 14px;
+    background: var(--bg); border-radius: 12px 12px 12px 2px;
+    border: 1px solid var(--border); align-self: flex-start; width: fit-content;
+  }
+  .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: typing 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%,60%,100%{opacity:0.3;transform:scale(1)} 30%{opacity:1;transform:scale(1.2)} }
+  .chat-input { display: flex; gap: 8px; }
+  .chat-input input {
+    flex: 1; border: 1px solid var(--border); border-radius: 10px;
+    padding: 9px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    background: var(--bg); color: var(--text); outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input input:focus { border-color: var(--accent); }
+  .chat-input button {
+    background: var(--text); color: var(--card); border: none; border-radius: 10px;
+    padding: 9px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+  }
+  .chat-input button:hover { opacity: 0.8; }
+  .chat-input button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* MOOD JOURNAL */
+  .journal-area {
+    width: 100%; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    background: var(--bg); color: var(--text); outline: none; resize: none; min-height: 80px;
+    transition: border-color 0.2s; line-height: 1.6;
+  }
+  .journal-area:focus { border-color: var(--accent); }
+  .journal-entry {
+    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .journal-entry:last-child { border-bottom: none; }
+  .journal-entry-time { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .journal-entry-mood { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-bottom: 6px; }
+  .journal-entry-text { color: var(--text); line-height: 1.5; }
+  .journal-entries { max-height: 200px; overflow-y: auto; margin-top: 8px; }
+
+  /* BREATHING EXERCISE */
+  .breathe-container {
+    display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 10px 0;
+  }
+  .breathe-circle-wrap { position: relative; width: 120px; height: 120px; }
+  .breathe-circle {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(29,185,122,0.2), rgba(29,185,122,0.05));
+    border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; color: var(--accent);
+    transition: transform 4s ease-in-out, opacity 0.5s;
+    flex-direction: column; gap: 2px;
+  }
+  .breathe-phase { font-size: 14px; font-weight: 600; }
+  .breathe-count { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--accent); }
+  .breathe-guide { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.5; }
+  .breathe-progress { display: flex; gap: 6px; }
+  .breathe-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+  .breathe-dot.active { background: var(--accent); }
+  .breathe-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 10px;
+    padding: 9px 22px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+  }
+  .breathe-btn:hover { opacity: 0.85; }
+
+  /* SUGGESTIONS */
+  .suggestion-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px; border-radius: 12px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .suggestion-item:hover { background: var(--bg); }
+  .sug-icon { font-size: 20px; width: 28px; flex-shrink: 0; }
+  .sug-title { font-size: 13px; font-weight: 500; }
+  .sug-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  /* EXPORT BUTTON */
+  .export-btn {
+    display: flex; align-items: center; gap: 8px; justify-content: center;
+    background: var(--border); color: var(--text); border: none; border-radius: 10px;
+    padding: 10px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 500; cursor: pointer; transition: opacity 0.2s; width: 100%;
+    margin-top: 12px;
+  }
+  .export-btn:hover { opacity: 0.8; }
+
+  /* TAB system */
+  .tab-nav { display: flex; gap: 4px; margin-bottom: 14px; }
+  .tab-btn {
+    font-size: 11px; padding: 4px 10px; border-radius: 6px; border: none;
+    background: transparent; color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s; font-weight: 500;
+  }
+  .tab-btn.active { background: var(--text); color: #fff; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* SOS MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--card); border-radius: 20px; padding: 28px;
+    max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    transform: scale(0.95); transition: transform 0.3s;
+  }
+  .modal-overlay.show .modal { transform: scale(1); }
+  .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .modal-resources { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .resource-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    border: 1px solid var(--border); border-radius: 12px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .resource-item:hover { background: var(--bg); }
+  .resource-icon { font-size: 22px; width: 32px; text-align: center; }
+  .resource-name { font-size: 13px; font-weight: 500; }
+  .resource-info { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .modal-close {
+    background: var(--border); border: none; border-radius: 10px; padding: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer;
+    color: var(--text); width: 100%; font-weight: 500; transition: background 0.2s;
+  }
+  .modal-close:hover { background: var(--muted); color: #fff; }
+
+  /* Save button */
+  .save-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 10px;
+    padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px;
+    font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+  }
+  .save-btn:hover { opacity: 0.85; }
+
+  /* Toast notification */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 2000;
+    background: var(--text); color: var(--card); border-radius: 12px;
+    padding: 12px 18px; font-size: 13px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(80px); opacity: 0; transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* GitHub modal */
+  .gh-form { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+  .gh-form label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .gh-form input {
+    width: 100%; border: 1px solid var(--border); border-radius: 10px;
+    padding: 9px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    background: var(--bg); color: var(--text); outline: none;
+  }
+  .gh-form input:focus { border-color: var(--accent); }
+  .gh-submit {
+    background: #24292e; color: #fff; border: none; border-radius: 10px;
+    padding: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .gh-submit:hover { opacity: 0.85; }
+  .gh-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .gh-note { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .gh-note a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- SOS MODAL -->
+<div class="modal-overlay" id="sos-modal">
+  <div class="modal">
+    <div style="font-size:32px;margin-bottom:10px;">🆘</div>
+    <div class="modal-title">You're not alone.</div>
+    <div class="modal-sub">If you're feeling overwhelmed, please reach out. These resources are here for you, anytime.</div>
+    <div class="modal-resources">
+      <div class="resource-item" onclick="window.open('tel:+918448446198')">
+        <div class="resource-icon">📞</div>
+        <div><div class="resource-name">iCall Helpline (India)</div><div class="resource-info">9152987821 · Mon–Sat 8am–10pm</div></div>
+      </div>
+      <div class="resource-item" onclick="window.open('tel:+914466202000')">
+        <div class="resource-icon">🏥</div>
+        <div><div class="resource-name">Vandrevala Foundation</div><div class="resource-info">1860-2662-345 · 24/7 Crisis Support</div></div>
+      </div>
+      <div class="resource-item" onclick="showBreathing()">
+        <div class="resource-icon">🫁</div>
+        <div><div class="resource-name">Guided Breathing Exercise</div><div class="resource-info">Start immediately · Reduces anxiety fast</div></div>
+      </div>
+    </div>
+    <button class="modal-close" onclick="closeSOS()">I'm okay, close this</button>
+  </div>
+</div>
+
+<!-- GITHUB MODAL -->
+<div class="modal-overlay" id="gh-modal">
+  <div class="modal">
+    <div style="font-size:32px;margin-bottom:10px;">🐙</div>
+    <div class="modal-title">Push to GitHub</div>
+    <div class="modal-sub">Upload this project directly to your GitHub repository.</div>
+    <div class="gh-form">
+      <div>
+        <label>GitHub Username</label>
+        <input type="text" id="gh-user" placeholder="e.g. rachanac2106" value="rachanac2106">
+      </div>
+      <div>
+        <label>Repository Name</label>
+        <input type="text" id="gh-repo" placeholder="e.g. mindsense-ai">
+      </div>
+      <div>
+        <label>File Name in Repo</label>
+        <input type="text" id="gh-filename" placeholder="e.g. index.html" value="index.html">
+      </div>
+      <div>
+        <label>Personal Access Token (PAT) &mdash; <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank">Generate one here</a></label>
+        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxx">
+      </div>
+    </div>
+    <p class="gh-note">Your PAT is used only for this upload and never stored. Ensure it has <strong>repo</strong> scope. If the repo doesn't exist yet, create it on GitHub first.</p>
+    <br>
+    <button class="gh-submit" id="gh-btn" onclick="pushToGitHub()">⬆ Push to GitHub</button>
+    <br><br>
+    <button class="modal-close" onclick="document.getElementById('gh-modal').classList.remove('show')">Cancel</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">MindSense <span>Student portal</span></div>
+  <div class="nav-right">
+    <div class="mood-badge" id="nav-mood">
+      <div class="mood-dot" id="mood-dot-nav"></div>
+      <span id="nav-mood-text">😢 Sad</span>
+    </div>
+    <button class="dark-toggle" onclick="toggleDark()" id="dark-btn">🌙</button>
+    <button class="dark-toggle" onclick="document.getElementById('gh-modal').classList.add('show')" style="background:#24292e;color:#fff;font-size:14px;">🐙 GitHub</button>
+    <button class="sos-btn" onclick="openSOS()">SOS</button>
+    <div class="avatar" title="Arjun Raj">AR</div>
+  </div>
+</nav>
+
+<!-- STRESS ALERT -->
+<div class="stress-alert" id="stress-alert" style="display:none;">
+  <div class="stress-alert-text">⚠️ High stress detected — you've shown elevated stress levels for 3+ days. How are you holding up?</div>
+  <div class="stress-alert-actions">
+    <button class="alert-action-btn primary" onclick="openSOS()">Get Help</button>
+    <button class="alert-action-btn secondary" onclick="document.getElementById('stress-alert').style.display='none'">Dismiss</button>
+  </div>
+</div>
+
+<!-- WEBCAM SECTION -->
+<div class="page-center" style="padding-top:20px;">
+  <div class="webcam-card">
+    <div class="webcam-left">
+      <div class="webcam-label">Live face recognition</div>
+      <div class="video-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="snap-canvas" style="display:none;"></canvas>
+        <div class="face-overlay">
+          <div class="face-box" id="face-box"></div>
+          <div class="face-label" id="face-label">Face detected</div>
+          <div class="scanning-line" id="scan-line"></div>
+        </div>
+      </div>
+      <div class="webcam-status">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Camera off — click Start to begin</span>
+      </div>
+      <button class="webcam-btn" id="cam-btn" onclick="toggleCam()">▶ Start Camera</button>
+    </div>
+    <div class="webcam-right">
+      <div class="webcam-label">Detected emotion</div>
+      <div class="detected-emotion">
+        <div class="emotion-big" id="det-emoji">😐</div>
+        <div class="emotion-name" id="det-name">Waiting...</div>
+        <div class="emotion-conf" id="det-conf">Start camera to detect emotion</div>
+      </div>
+
+      <!-- WELLNESS RING -->
+      <div class="wellness-ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 70 70">
+          <circle cx="35" cy="35" r="28" fill="none" stroke="var(--border)" stroke-width="7"/>
+          <circle id="ring-progress" cx="35" cy="35" r="28" fill="none"
+            stroke="var(--accent)" stroke-width="7" stroke-linecap="round"
+            stroke-dasharray="176" stroke-dashoffset="176"
+            transform="rotate(-90 35 35)"
+            style="transition: stroke-dashoffset 1s ease;"/>
+        </svg>
+        <div class="ring-info">
+          <div class="ring-score" id="ring-score-val">54</div>
+          <div class="ring-label">Wellness Score</div>
+          <div class="ring-tip" id="ring-tip">Keep going — every small step matters</div>
+        </div>
+      </div>
+
+      <div class="webcam-label" style="margin-top:4px;">Emotion breakdown</div>
+      <div class="emotion-bars">
+        <div class="ebar"><span class="ebar-label">Happy</span><div class="ebar-track"><div class="ebar-fill" id="bar-happy" style="width:0%;background:var(--happy)"></div></div><span class="ebar-val" id="val-happy">0%</span></div>
+        <div class="ebar"><span class="ebar-label">Neutral</span><div class="ebar-track"><div class="ebar-fill" id="bar-neutral" style="width:0%;background:var(--neutral)"></div></div><span class="ebar-val" id="val-neutral">0%</span></div>
+        <div class="ebar"><span class="ebar-label">Sad</span><div class="ebar-track"><div class="ebar-fill" id="bar-sad" style="width:0%;background:var(--sad)"></div></div><span class="ebar-val" id="val-sad">0%</span></div>
+        <div class="ebar"><span class="ebar-label">Stressed</span><div class="ebar-track"><div class="ebar-fill" id="bar-stressed" style="width:0%;background:var(--stressed)"></div></div><span class="ebar-val" id="val-stressed">0%</span></div>
+        <div class="ebar"><span class="ebar-label">Anxious</span><div class="ebar-track"><div class="ebar-fill" id="bar-anxious" style="width:0%;background:var(--anxious)"></div></div><span class="ebar-val" id="val-anxious">0%</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="page-center">
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Current mood</div>
+      <div class="stat-val" id="stat-mood-emoji" style="font-size:36px;">😢</div>
+      <div class="stat-sub" id="stat-mood-name">Sad</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Wellness score</div>
+      <div class="stat-val warn" id="stat-wellness-val">54<span style="font-size:16px;font-weight:400;">/100</span></div>
+      <div class="stat-sub">↑ 8 this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Happy days (30d)</div>
+      <div class="stat-val good">11</div>
+      <div class="stat-sub">out of 30</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sessions logged</div>
+      <div class="stat-val" id="stat-sessions">24</div>
+      <div class="stat-sub">this month</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="wrapper">
+  <div class="main-col">
+    <!-- CHART -->
+    <div class="card">
+      <div class="card-title">
+        Emotion trend — last 14 days
+        <div class="toggle-btns">
+          <button class="tbtn active" onclick="setRange(14,this)">14d</button>
+          <button class="tbtn" onclick="setRange(30,this)">30d</button>
+        </div>
+      </div>
+      <div class="chart-wrap" id="chart-wrap">
+        <div class="y-axis">
+          <span class="y-tick">100%</span>
+          <span class="y-tick">80%</span>
+          <span class="y-tick">60%</span>
+          <span class="y-tick">40%</span>
+          <span class="y-tick">20%</span>
+          <span class="y-tick">0%</span>
+        </div>
+        <div class="bars-area" id="bars-area"></div>
+        <div class="tooltip" id="tooltip"></div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--happy)"></div>Happy</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--neutral)"></div>Neutral</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sad)"></div>Sad</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--stressed)"></div>Stressed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--anxious)"></div>Anxious</div>
+      </div>
+    </div>
+
+    <!-- SESSIONS -->
+    <div class="card">
+      <div class="card-title">Recent sessions
+        <button class="export-btn" style="width:auto;margin-top:0;padding:4px 14px;font-size:11px;" onclick="exportReport()">⬇ Export Report</button>
+      </div>
+      <div id="sessions-list"></div>
+    </div>
+
+    <!-- MOOD JOURNAL -->
+    <div class="card">
+      <div class="card-title">Mood journal
+        <button class="save-btn" onclick="saveJournalEntry()">Save Entry</button>
+      </div>
+      <div style="margin-bottom:10px;">
+        <select id="journal-mood-select" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--text);margin-bottom:8px;outline:none;">
+          <option value="">Select today's mood…</option>
+          <option value="😊 Happy">😊 Happy</option>
+          <option value="😐 Neutral">😐 Neutral</option>
+          <option value="😢 Sad">😢 Sad</option>
+          <option value="😰 Stressed">😰 Stressed</option>
+          <option value="😨 Anxious">😨 Anxious</option>
+        </select>
+        <textarea class="journal-area" id="journal-text" placeholder="Write about how you're feeling today. This is your private space…"></textarea>
+      </div>
+      <div class="journal-entries" id="journal-entries"></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- AI CHAT - now with real Claude AI -->
+    <div class="card">
+      <div class="card-title">AI support assistant <span style="font-size:10px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:0.05em;">LIVE AI</span></div>
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('chat')">Chat</button>
+        <button class="tab-btn" onclick="switchTab('breathe')">Breathe</button>
+      </div>
+
+      <!-- CHAT TAB -->
+      <div class="tab-content active" id="tab-chat">
+        <div class="chat-messages" id="chat-messages">
+          <div class="ai-bubble">Hi Arjun 👋 I'm your AI mental wellness assistant. I'm here to listen and support you. How are you feeling today?</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chat-in" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button onclick="sendMsg()" id="send-btn">Send</button>
+        </div>
+      </div>
+
+      <!-- BREATHING TAB -->
+      <div class="tab-content" id="tab-breathe">
+        <div class="breathe-container">
+          <div class="breathe-circle" id="breathe-circle">
+            <span class="breathe-phase" id="breathe-phase">Ready</span>
+            <span class="breathe-count" id="breathe-count">4</span>
+          </div>
+          <div class="breathe-progress" id="breathe-progress">
+            <div class="breathe-dot active"></div>
+            <div class="breathe-dot"></div>
+            <div class="breathe-dot"></div>
+            <div class="breathe-dot"></div>
+          </div>
+          <div class="breathe-guide" id="breathe-guide">Box breathing: inhale 4s → hold 4s → exhale 4s → hold 4s. Repeat 4 cycles to calm your nervous system.</div>
+          <button class="breathe-btn" id="breathe-btn" onclick="toggleBreathing()">▶ Start Exercise</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUGGESTIONS -->
+    <div class="card">
+      <div class="card-title">Suggested for you</div>
+      <div class="suggestion-item" onclick="switchTab('breathe');document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===1)});document.querySelectorAll('.tab-content').forEach((c,i)=>{c.classList.toggle('active',i===1)})">
+        <div class="sug-icon">🫁</div>
+        <div><div class="sug-title">Box breathing exercise</div><div class="sug-sub">5 min · Reduces anxiety</div></div>
+      </div>
+      <div class="suggestion-item" onclick="showToast('Opening mindfulness session…')">
+        <div class="sug-icon">🧘</div>
+        <div><div class="sug-title">Mindfulness meditation</div><div class="sug-sub">10 min · Improves focus</div></div>
+      </div>
+      <div class="suggestion-item" onclick="showToast('Booking counseling session…')">
+        <div class="sug-icon">📅</div>
+        <div><div class="sug-title">Book counseling session</div><div class="sug-sub">Next slot: Today 3 PM</div></div>
+      </div>
+      <div class="suggestion-item" onclick="showToast('Loading exam stress toolkit…')">
+        <div class="sug-icon">📚</div>
+        <div><div class="sug-title">Exam stress toolkit</div><div class="sug-sub">Tips, planning, self-care</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Dark Mode ──
+function toggleDark() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('dark-btn').textContent = isDark ? '🌙' : '☀️';
+  showToast(isDark ? 'Light mode on' : 'Dark mode on');
+}
+
+// ── Toast ──
+function showToast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ── SOS ──
+function openSOS() { document.getElementById('sos-modal').classList.add('show'); }
+function closeSOS() { document.getElementById('sos-modal').classList.remove('show'); }
+document.getElementById('sos-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeSOS(); });
+
+// ── Tab System ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i===0&&tab==='chat')||(i===1&&tab==='breathe')));
+  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', (i===0&&tab==='chat')||(i===1&&tab==='breathe')));
+}
+function showBreathing() {
+  closeSOS();
+  switchTab('breathe');
+}
+
+// ── Chart data ──
+const dates14 = ['Apr 7','Apr 8','Apr 9','Apr 10','Apr 11','Apr 12','Apr 13','Apr 14','Apr 15','Apr 16','Apr 17','Apr 18','Apr 19','Apr 20'];
+const data14 = [
+  {h:70,n:10,sa:10,st:7,a:3},{h:65,n:12,sa:12,st:8,a:3},{h:60,n:15,sa:13,st:9,a:3},
+  {h:55,n:13,sa:15,st:12,a:5},{h:50,n:15,sa:17,st:13,a:5},{h:45,n:12,sa:20,st:15,a:8},
+  {h:40,n:14,sa:22,st:16,a:8},{h:35,n:15,sa:25,st:17,a:8},{h:20,n:25,sa:30,st:15,a:10},
+  {h:18,n:20,sa:32,st:18,a:12},{h:22,n:18,sa:30,st:17,a:13},{h:20,n:20,sa:28,st:18,a:14},
+  {h:15,n:18,sa:35,st:18,a:14},{h:18,n:17,sa:33,st:19,a:13}
+];
+
+function buildChart(days, dataArr, labelsArr) {
+  const area = document.getElementById('bars-area');
+  const tip = document.getElementById('tooltip');
+  area.innerHTML = '';
+  const colors = ['var(--happy)','var(--neutral)','var(--sad)','var(--stressed)','var(--anxious)'];
+  const keys = ['h','n','sa','st','a'];
+  const names = ['Happy','Neutral','Sad','Stressed','Anxious'];
+  const slice = dataArr.slice(-days);
+  const lblSlice = labelsArr.slice(-days);
+
+  slice.forEach((d, i) => {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const total = keys.reduce((s,k)=>s+d[k],0);
+    const order = ['a','st','sa','n','h'];
+    order.forEach((k) => {
+      const seg = document.createElement('div');
+      seg.className = 'bar-seg';
+      const pct = (d[k]/total*100).toFixed(1);
+      seg.style.height = pct + '%';
+      seg.style.background = colors[keys.indexOf(k)];
+      col.appendChild(seg);
+    });
+    if (i % 2 === 0) {
+      const lbl = document.createElement('div');
+      lbl.className = 'bar-date';
+      lbl.textContent = lblSlice[i];
+      col.appendChild(lbl);
+    }
+    col.addEventListener('mouseenter', e => {
+      const rows = keys.map((k,ki) => `<div class="tooltip-row"><div class="tooltip-dot" style="background:${colors[ki]}"></div>${names[ki]}: ${d[k]}%</div>`).join('');
+      tip.innerHTML = `<div class="tooltip-date">${lblSlice[i]}</div>${rows}`;
+      const rect = area.getBoundingClientRect();
+      const colRect = col.getBoundingClientRect();
+      let left = colRect.left - rect.left - 65;
+      if (left + 150 > rect.width) left = rect.width - 160;
+      if (left < 0) left = 0;
+      tip.style.left = left + 'px';
+      tip.style.top = '0px';
+      tip.classList.add('show');
+    });
+    col.addEventListener('mouseleave', () => tip.classList.remove('show'));
+    area.appendChild(col);
+  });
+}
+
+buildChart(14, data14, dates14);
+
+function setRange(days, btn) {
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildChart(days, data14, dates14);
+}
+
+// ── Sessions ──
+const sessions = [
+  {emoji:'😢',time:'Today 10:42 AM',mood:'sad',score:45},
+  {emoji:'😰',time:'Yesterday 2:15 PM',mood:'stressed',score:38},
+  {emoji:'😐',time:'Apr 18 9:00 AM',mood:'neutral',score:55},
+  {emoji:'😊',time:'Apr 17 4:30 PM',mood:'happy',score:72},
+  {emoji:'😨',time:'Apr 16 11:10 AM',mood:'anxious',score:41},
+];
+const sl = document.getElementById('sessions-list');
+sessions.forEach(s => {
+  sl.innerHTML += `<div class="session-item">
+    <div class="session-left">
+      <div class="session-emoji">${s.emoji}</div>
+      <div class="session-info">
+        <div class="session-time">${s.time}</div>
+        <div class="session-mood">${s.mood}</div>
+      </div>
+    </div>
+    <div class="session-score">${s.score}/100</div>
+  </div>`;
+});
+
+// ── Export Report ──
+function exportReport() {
+  const now = new Date().toLocaleDateString('en-IN', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const journalEntries = JSON.parse(localStorage.getItem('mindSenseJournal') || '[]');
+  let jText = journalEntries.length ? journalEntries.map(e=>`  [${e.time}] ${e.mood}\n  ${e.text}`).join('\n\n') : '  No journal entries yet.';
+
+  const report = `MINDSENSE WELLNESS REPORT
+Generated: ${now}
+Student: Arjun Raj
+─────────────────────────────────────
+
+OVERVIEW
+  Wellness Score : 54/100
+  Current Mood   : Sad
+  Sessions (30d) : 24
+  Happy Days     : 11 / 30
+
+RECENT SESSIONS
+${sessions.map(s=>`  ${s.emoji} ${s.time} — ${s.mood} (${s.score}/100)`).join('\n')}
+
+MOOD JOURNAL
+${jText}
+
+EMOTION TREND (Last 14 Days)
+  Trend shows increasing stress and sadness.
+  Recommended: Schedule a counseling session.
+
+─────────────────────────────────────
+MindSense Student Portal · Confidential`;
+
+  const blob = new Blob([report], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `MindSense_Report_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  showToast('📄 Report downloaded!');
+}
+
+// ── Mood Journal ──
+function saveJournalEntry() {
+  const text = document.getElementById('journal-text').value.trim();
+  const mood = document.getElementById('journal-mood-select').value;
+  if (!text) { showToast('Please write something first ✍️'); return; }
+
+  const entry = {
+    time: new Date().toLocaleString('en-IN', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}),
+    mood: mood || 'Unspecified',
+    text
+  };
+
+  const entries = JSON.parse(localStorage.getItem('mindSenseJournal') || '[]');
+  entries.unshift(entry);
+  localStorage.setItem('mindSenseJournal', JSON.stringify(entries.slice(0,20)));
+
+  document.getElementById('journal-text').value = '';
+  document.getElementById('journal-mood-select').value = '';
+  renderJournal();
+  showToast('Journal entry saved 📝');
+
+  // update session count
+  const sc = document.getElementById('stat-sessions');
+  sc.textContent = parseInt(sc.textContent) + 1;
+}
+
+function renderJournal() {
+  const entries = JSON.parse(localStorage.getItem('mindSenseJournal') || '[]');
+  const container = document.getElementById('journal-entries');
+  if (!entries.length) { container.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0;">No entries yet. Write your first entry above.</div>'; return; }
+
+  const moodColors = {
+    '😊 Happy':'#e8f8f0','😐 Neutral':'#f5f5f5','😢 Sad':'#fff8e8',
+    '😰 Stressed':'#fff0f0','😨 Anxious':'#f3f0ff','Unspecified':'#f5f4f0'
+  };
+  container.innerHTML = entries.map(e => `
+    <div class="journal-entry">
+      <div class="journal-entry-time">${e.time}</div>
+      <span class="journal-entry-mood" style="background:${moodColors[e.mood]||'#f5f4f0'}">${e.mood}</span>
+      <div class="journal-entry-text">${e.text}</div>
+    </div>`).join('');
+}
+renderJournal();
+
+// ── AI Chat (Real-time via Anthropic API) ──
+const chatHistory = [];
+
+async function sendMsg() {
+  const inp = document.getElementById('chat-in');
+  const btn = document.getElementById('send-btn');
+  const msg = inp.value.trim();
+  if (!msg) return;
+
+  inp.value = '';
+  btn.disabled = true;
+
+  const messagesDiv = document.getElementById('chat-messages');
+  messagesDiv.innerHTML += `<div class="user-bubble">${msg}</div>`;
+
+  const typingId = 'typing-' + Date.now();
+  messagesDiv.innerHTML += `<div class="typing-indicator" id="${typingId}"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  chatHistory.push({role: 'user', content: msg});
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: `You are a compassionate AI mental wellness assistant for the MindSense Student Portal. 
+You support university students experiencing stress, anxiety, sadness, and academic pressure. 
+The student's name is Arjun Raj. Current detected mood: Sad. Wellness score: 54/100.
+Be warm, empathetic, and supportive. Keep responses concise (2-4 sentences). 
+Offer practical coping strategies. If the student mentions severe distress or self-harm, 
+immediately encourage them to use the SOS button or contact a counselor.
+Do not provide medical diagnoses. Focus on emotional support and wellness strategies.`,
+        messages: chatHistory
+      })
+    });
+
+    if (!response.ok) throw new Error('API error ' + response.status);
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || "I'm here for you. Could you tell me more about how you're feeling?";
+
+    chatHistory.push({role: 'assistant', content: reply});
+    document.getElementById(typingId)?.remove();
+    messagesDiv.innerHTML += `<div class="ai-bubble">${reply}</div>`;
+  } catch(e) {
+    document.getElementById(typingId)?.remove();
+    const fallbacks = {
+      sad: "It sounds like you're going through a tough time. It's okay to feel this way — you don't have to face it alone. Would a breathing exercise help right now?",
+      stress: "Academic stress can be really overwhelming. Let's try breaking things into smaller steps. What's the most pressing thing on your mind?",
+      anxious: "Anxiety is really tough to sit with. Try the box breathing exercise — it can help calm your nervous system within minutes.",
+      default: "I hear you. Your feelings are completely valid. Remember, reaching out for support is a sign of strength, not weakness. 💚"
+    };
+    const low = msg.toLowerCase();
+    let rep = fallbacks.default;
+    if (low.includes('sad') || low.includes('down') || low.includes('cry')) rep = fallbacks.sad;
+    else if (low.includes('stress') || low.includes('exam') || low.includes('pressure')) rep = fallbacks.stress;
+    else if (low.includes('anxious') || low.includes('anxiety') || low.includes('worried')) rep = fallbacks.anxious;
+    chatHistory.push({role: 'assistant', content: rep});
+    messagesDiv.innerHTML += `<div class="ai-bubble">${rep}</div>`;
+  }
+
+  btn.disabled = false;
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// ── Push to GitHub ──
+async function pushToGitHub() {
+  const user = document.getElementById('gh-user').value.trim();
+  const repo = document.getElementById('gh-repo').value.trim();
+  const filename = document.getElementById('gh-filename').value.trim() || 'index.html';
+  const token = document.getElementById('gh-token').value.trim();
+  const btn = document.getElementById('gh-btn');
+
+  if (!user || !repo || !token) {
+    showToast('⚠️ Please fill in username, repo, and token');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Pushing...';
+
+  try {
+    // Get file content as base64
+    const content = document.documentElement.outerHTML;
+    const b64 = btoa(unescape(encodeURIComponent(content)));
+
+    // Check if file already exists (to get SHA for update)
+    let sha = null;
+    const checkRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${filename}`, {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (checkRes.ok) {
+      const existing = await checkRes.json();
+      sha = existing.sha;
+    }
+
+    const body = {
+      message: sha ? `Update ${filename} via MindSense portal` : `Add ${filename} - MindSense Student Portal`,
+      content: b64,
+      ...(sha ? {sha} : {})
+    };
+
+    const pushRes = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${filename}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!pushRes.ok) {
+      const err = await pushRes.json();
+      throw new Error(err.message || 'GitHub API error');
+    }
+
+    const result = await pushRes.json();
+    showToast('✅ Pushed to GitHub successfully!', 4000);
+    btn.textContent = '✅ Done!';
+    setTimeout(() => {
+      document.getElementById('gh-modal').classList.remove('show');
+      btn.textContent = '⬆ Push to GitHub';
+      btn.disabled = false;
+      window.open(`https://github.com/${user}/${repo}/blob/main/${filename}`, '_blank');
+    }, 1500);
+  } catch(e) {
+    showToast('❌ Error: ' + e.message, 4000);
+    btn.textContent = '⬆ Push to GitHub';
+    btn.disabled = false;
+  }
+}
+
+// ── Breathing Exercise ──
+let breathingActive = false;
+let breathingTimer = null;
+let breathPhase = 0; // 0=inhale,1=hold,2=exhale,3=hold2
+let breathCycle = 0;
+let breathCount = 4;
+const breathPhases = [
+  {name:'Inhale',count:4,scale:'scale(1.4)',color:'rgba(29,185,122,0.25)'},
+  {name:'Hold',count:4,scale:'scale(1.4)',color:'rgba(29,185,122,0.15)'},
+  {name:'Exhale',count:4,scale:'scale(1)',color:'rgba(29,185,122,0.05)'},
+  {name:'Hold',count:4,scale:'scale(1)',color:'rgba(29,185,122,0.1)'}
+];
+const TOTAL_CYCLES = 4;
+
+function toggleBreathing() {
+  if (breathingActive) {
+    breathingActive = false;
+    clearTimeout(breathingTimer);
+    document.getElementById('breathe-btn').textContent = '▶ Start Exercise';
+    document.getElementById('breathe-phase').textContent = 'Ready';
+    document.getElementById('breathe-count').textContent = '4';
+    document.getElementById('breathe-circle').style.transform = '';
+    document.getElementById('breathe-circle').style.background = 'radial-gradient(circle, rgba(29,185,122,0.2), rgba(29,185,122,0.05))';
+    document.getElementById('breathe-guide').textContent = 'Box breathing: inhale 4s → hold 4s → exhale 4s → hold 4s. Repeat 4 cycles to calm your nervous system.';
+    document.querySelectorAll('.breathe-dot').forEach((d,i)=>d.classList.toggle('active',i===0));
+    breathPhase=0; breathCycle=0; breathCount=4;
+  } else {
+    breathingActive = true;
+    breathPhase=0; breathCycle=0; breathCount=4;
+    document.getElementById('breathe-btn').textContent = '■ Stop';
+    runBreathStep();
+  }
+}
+
+function runBreathStep() {
+  if (!breathingActive) return;
+  const phase = breathPhases[breathPhase];
+  const circle = document.getElementById('breathe-circle');
+  document.getElementById('breathe-phase').textContent = phase.name;
+  circle.style.transform = phase.scale;
+  circle.style.background = `radial-gradient(circle, ${phase.color}, rgba(29,185,122,0.02))`;
+  circle.style.transition = `transform ${phase.count}s ease-in-out`;
+
+  // Countdown
+  breathCount = phase.count;
+  document.getElementById('breathe-count').textContent = breathCount;
+
+  // Update dots: show current cycle
+  document.querySelectorAll('.breathe-dot').forEach((d,i)=>d.classList.toggle('active', i < breathCycle + 1));
+
+  const countdownInterval = setInterval(() => {
+    breathCount--;
+    if (breathCount >= 0) document.getElementById('breathe-count').textContent = breathCount;
+  }, 1000);
+
+  breathingTimer = setTimeout(() => {
+    clearInterval(countdownInterval);
+    breathPhase = (breathPhase + 1) % 4;
+    if (breathPhase === 0) {
+      breathCycle++;
+      if (breathCycle >= TOTAL_CYCLES) {
+        breathingActive = false;
+        document.getElementById('breathe-phase').textContent = '✓ Done';
+        document.getElementById('breathe-count').textContent = '';
+        document.getElementById('breathe-guide').textContent = 'Great job! You completed 4 cycles. Notice how you feel calmer now. 💚';
+        document.getElementById('breathe-btn').textContent = '▶ Start Again';
+        document.querySelectorAll('.breathe-dot').forEach(d=>d.classList.add('active'));
+        showToast('Breathing exercise complete 🎉');
+        return;
+      }
+    }
+    runBreathStep();
+  }, phase.count * 1000);
+}
+
+// ── Wellness Ring Update ──
+function updateWellnessRing(score) {
+  const circumference = 176;
+  const offset = circumference - (score / 100) * circumference;
+  document.getElementById('ring-progress').style.strokeDashoffset = offset;
+  document.getElementById('ring-score-val').textContent = score;
+  const tips = {
+    low:'Reaching out is brave. Talk to someone today 💙',
+    mid:'Keep going — small steps make a big difference 🌱',
+    high:'You\'re doing wonderfully! Keep nurturing yourself 🌟'
+  };
+  document.getElementById('ring-tip').textContent = score < 40 ? tips.low : score < 65 ? tips.mid : tips.high;
+  // Update stat card color
+  const sv = document.getElementById('stat-wellness-val');
+  sv.innerHTML = `${score}<span style="font-size:16px;font-weight:400;">/100</span>`;
+  sv.className = 'stat-val ' + (score < 45 ? 'warn' : 'good');
+  setTimeout(() => updateWellnessRing(score), 100000); // no auto update needed
+}
+updateWellnessRing(54);
+
+// ── Webcam & Simulated Emotion Detection ──
+let stream = null;
+let detecting = false;
+let detectInterval = null;
+const emotions = [
+  {name:'Sad',emoji:'😢',scores:{Happy:5,Neutral:15,Sad:55,Stressed:18,Anxious:7},wellnessScore:38},
+  {name:'Stressed',emoji:'😰',scores:{Happy:8,Neutral:10,Sad:22,Stressed:45,Anxious:15},wellnessScore:42},
+  {name:'Neutral',emoji:'😐',scores:{Happy:20,Neutral:50,Sad:15,Stressed:10,Anxious:5},wellnessScore:58},
+  {name:'Happy',emoji:'😊',scores:{Happy:65,Neutral:20,Sad:8,Stressed:5,Anxious:2},wellnessScore:82},
+  {name:'Anxious',emoji:'😨',scores:{Happy:10,Neutral:15,Sad:25,Stressed:20,Anxious:30},wellnessScore:44},
+];
+
+let baseEmoIdx = 0;
+let tick = 0;
+let highStressTicks = 0;
+
+function simulateDetection() {
+  tick++;
+  if (tick % 18 === 0) baseEmoIdx = (baseEmoIdx + 1) % emotions.length;
+  const base = emotions[baseEmoIdx];
+  const conf = (78 + Math.random() * 18).toFixed(1);
+  const scores = {};
+  let total = 0;
+  Object.entries(base.scores).forEach(([k,v]) => {
+    const noise = (Math.random() * 8) - 4;
+    scores[k] = Math.max(1, Math.round(v + noise));
+    total += scores[k];
+  });
+  Object.keys(scores).forEach(k => scores[k] = Math.round(scores[k]/total*100));
+  updateEmotionUI(base, conf, scores);
+
+  // Stress alert logic
+  if (base.name === 'Stressed' || base.name === 'Anxious') {
+    highStressTicks++;
+    if (highStressTicks >= 3) {
+      document.getElementById('stress-alert').style.display = 'flex';
+    }
+  } else { highStressTicks = 0; }
+}
+
+function updateEmotionUI(emo, conf, scores) {
+  document.getElementById('det-emoji').textContent = emo.emoji;
+  document.getElementById('det-name').textContent = emo.name;
+  document.getElementById('det-conf').textContent = `Confidence: ${conf}%`;
+  const map = {Happy:'happy',Neutral:'neutral',Sad:'sad',Stressed:'stressed',Anxious:'anxious'};
+  Object.entries(scores).forEach(([k,v]) => {
+    const key = map[k];
+    document.getElementById('bar-'+key).style.width = v+'%';
+    document.getElementById('val-'+key).textContent = v+'%';
+  });
+  document.getElementById('nav-mood-text').textContent = emo.emoji+' '+emo.name;
+  document.getElementById('stat-mood-emoji').textContent = emo.emoji;
+  document.getElementById('stat-mood-name').textContent = emo.name;
+  updateWellnessRing(emo.wellnessScore + Math.round((Math.random()*6)-3));
+}
+
+async function toggleCam() {
+  const btn = document.getElementById('cam-btn');
+  const dot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  if (!detecting) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+      document.getElementById('webcam').srcObject = stream;
+      detecting = true;
+      btn.textContent = '■ Stop Camera';
+      btn.classList.add('stop');
+      dot.classList.add('active');
+      statusText.textContent = 'Camera active — detecting emotions…';
+      setTimeout(() => {
+        document.getElementById('face-box').style.display = 'block';
+        document.getElementById('face-label').style.display = 'block';
+        document.getElementById('scan-line').style.display = 'block';
+      }, 1000);
+      simulateDetection();
+      detectInterval = setInterval(simulateDetection, 2500);
+    } catch(e) {
+      statusText.textContent = 'Camera denied — using simulation mode…';
+      dot.classList.add('active');
+      detecting = true;
+      btn.textContent = '■ Stop Simulation';
+      btn.classList.add('stop');
+      simulateDetection();
+      detectInterval = setInterval(simulateDetection, 2500);
+    }
+  } else {
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    document.getElementById('webcam').srcObject = null;
+    detecting = false;
+    clearInterval(detectInterval);
+    btn.textContent = '▶ Start Camera';
+    btn.classList.remove('stop');
+    dot.classList.remove('active');
+    statusText.textContent = 'Camera off — click Start to begin';
+    document.getElementById('face-box').style.display = 'none';
+    document.getElementById('face-label').style.display = 'none';
+    document.getElementById('scan-line').style.display = 'none';
+    document.getElementById('det-emoji').textContent = '😐';
+    document.getElementById('det-name').textContent = 'Waiting...';
+    document.getElementById('det-conf').textContent = 'Start camera to detect emotion';
+    ['happy','neutral','sad','stressed','anxious'].forEach(k=>{
+      document.getElementById('bar-'+k).style.width='0%';
+      document.getElementById('val-'+k).textContent='0%';
+    });
+    updateWellnessRing(54);
+  }
+}
+</script>
+</body>
+</html>
